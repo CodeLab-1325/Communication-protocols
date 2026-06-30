@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+// 프로토콜 버퍼 패키지 이름 (네임스페이스 역할)
+package user;
+
+// 서비스(Service) 정의: 서버가 제공할 기능들의 목록 (인터페이스)
+service UserService {
+  // GetUser 함수: UserRequest를 받아서 UserResponse를 반환합니다.
+  rpc GetUser (UserRequest) returns (UserResponse) {}
+}
+
+// 클라이언트가 보낼 요청 데이터 구조
+message UserRequest {
+  // = 1 은 값이 아니라 '필드 번호(고유 식별자)'입니다.
+  // 이 번호를 통해 바이너리로 압축했을 때 데이터를 빠르고 정확하게 찾아냅니다.
+  int32 user_id = 1;  
+}
+
+// 서버가 반환할 응답 데이터 구조
+message UserResponse {
+  int32 user_id = 1;
+  string name = 2;
+  string email = 3;
+  bool is_active = 4;
+}
