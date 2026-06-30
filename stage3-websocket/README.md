@@ -32,6 +32,32 @@ uvicorn main:app --reload --port 8000
 
 ---
 
+### 📡 동작 흐름도 (WebSocket vs SSE)
+
+```mermaid
+sequenceDiagram
+    participant Client as 웹 브라우저
+    participant FastAPI as FastAPI 서버
+    
+    rect rgb(230, 240, 255)
+    Note over Client, FastAPI: 1. WebSocket (양방향 실시간 채팅)
+    Client->>FastAPI: HTTP GET (Upgrade: websocket)
+    FastAPI->>Client: HTTP 101 Switching Protocols
+    Client<-->>FastAPI: ws.send() & ws.receive() (자유로운 양방향 통신)
+    end
+    
+    rect rgb(255, 240, 230)
+    Note over Client, FastAPI: 2. SSE (단방향 Push 알림)
+    Client->>FastAPI: HTTP GET /stream (Accept: text/event-stream)
+    FastAPI->>Client: HTTP 200 OK (연결 유지)
+    loop 1초마다
+        FastAPI-->>Client: data: 현재 시간...\n\n (서버가 일방적으로 밀어넣음)
+    end
+    end
+```
+
+---
+
 ## 🔍 핵심 관전 포인트
 
 - **프레임워크의 위력**: 2단계에서 HTTP 문자열을 파싱하기 위해 짰던 수십 줄의 코드가 `@app.get("/")` 한 줄로 끝납니다. WebSocket 핸드쉐이크(Upgrade) 역시 복잡한 규약 처리를 프레임워크가 다 해주어, 우리는 오직 "받고(receive)", "보내는(send)" 본질적인 로직에만 집중할 수 있습니다.

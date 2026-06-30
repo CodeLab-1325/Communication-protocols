@@ -26,6 +26,24 @@ python stage2-http1.1/server.py
 
 ---
 
+### 📡 동작 흐름도 (Raw HTTP 파싱)
+
+```mermaid
+sequenceDiagram
+    participant Browser as 웹 브라우저
+    participant Server as Raw HTTP 서버
+    
+    Browser->>Server: TCP 연결 수립
+    Note over Browser, Server: GET / HTTP/1.1\r\nHost: ... (거친 텍스트)
+    Browser->>Server: HTTP Request 텍스트 전송
+    Note over Server: 1. http_parser.py (파싱)<br>2. router.py (라우팅)<br>3. handlers.py (로직 처리)
+    Note over Browser, Server: HTTP/1.1 200 OK\r\n\r\n<html>... (텍스트 조립)
+    Server-->>Browser: HTTP Response 텍스트(바이트) 전송
+    Server->>Browser: TCP 연결 종료 (Connection: close)
+```
+
+---
+
 ## 🔍 핵심 관전 포인트 (아키텍처 분리)
 
 1단계에서는 모든 로직이 `server.py` 하나에 뭉쳐 있었지만, 이번에는 역할별로 파일을 나누었습니다. 웹 프레임워크들이 내부적으로 가지고 있는 핵심 모듈들입니다.

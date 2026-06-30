@@ -45,6 +45,27 @@ python client.py
 
 ---
 
+### 📡 동작 흐름도 (gRPC & RPC 호출)
+
+```mermaid
+sequenceDiagram
+    participant ClientApp as Client (Python)
+    participant Stub as Client Stub (자동생성)
+    participant Network as HTTP/2 Network
+    participant Servicer as Server (Python)
+    
+    ClientApp->>Stub: stub.GetUser(UserRequest(id=1))
+    Note over Stub: 파라미터를 Protobuf 바이너리로 압축(직렬화)
+    Stub->>Network: 바이너리 스트림 전송 (가볍고 빠름)
+    Network->>Servicer: 수신 후 바이너리를 객체로 복원(역직렬화)
+    Note over Servicer: UserService 구현체에서 DB 조회 등 로직 처리
+    Servicer->>Network: UserResponse 바이너리 스트림 전송
+    Network->>Stub: 수신 후 파이썬 객체로 복원
+    Stub->>ClientApp: return response 객체
+```
+
+---
+
 ## 🔍 핵심 관전 포인트
 - `protos/user.proto` 파일을 열어보세요. 이 짧은 코드 몇 줄이 클라이언트와 서버 간의 **완벽한 계약서(Contract)** 역할을 합니다. 클라이언트가 어떤 언어로 작성되었든 이 파일만 있으면 통신할 수 있습니다.
 - `client.py`를 열어보세요. HTTP URL (`http://.../users/1`) 이나 HTTP 메서드 (`GET`) 같은 라우팅 문자열이 코드에 전혀 없습니다. 오직 `stub.GetUser(request)`라는 순수한 함수 호출뿐입니다. 이것이 바로 원격 프로시저 호출(RPC)의 강력함입니다!
